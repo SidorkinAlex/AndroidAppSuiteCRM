@@ -10,4 +10,12 @@
     <string name="menu_home">Home</string>
     <string name="menu_settings_app">Settings App</string>
     <string name="menu_slideshow">Slideshow</string>
+    <string name="settings_url">URL SuiteCRM</string>
+    <string name="login_crm">Login</string>
+    <string name="pass_crm">Password</string>
+    <string name="settings_autologin">automatic login</string>
+    <string name="settings_button_save">Save</string>
+    <string name="settings_button_test">Test settings</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
