@@ -1,5 +1,7 @@
 package com.example.suitecrmapp.ui.settings;
 
+import android.app.Activity;
+import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 
@@ -9,6 +11,7 @@ import androidx.fragment.app.Fragment;
 
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,13 +19,21 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.suitecrmapp.MainActivity;
 import com.example.suitecrmapp.R;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static android.content.Context.MODE_PRIVATE;
+
 
 public class SettingsMainFragment extends Fragment {
+    private static final String APP_URL = "url" ;
+    private static final String APP_MAIN_SETTINGS = "APP_MAIN" ;
+    private static final String APP_USER_LOGIN = "login" ;
+    private static final String APP_USER_PASS = "pass" ;
+    private SharedPreferences sharedPreferences;
     EditText url;
     EditText login;
     EditText pass;
@@ -35,6 +46,9 @@ public class SettingsMainFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Activity ma = getActivity();
+        sharedPreferences = ma.getSharedPreferences(
+                APP_MAIN_SETTINGS, MODE_PRIVATE);
         initViewElements(view);
     }
 
@@ -45,6 +59,12 @@ public class SettingsMainFragment extends Fragment {
 
     private void initEditText(View view) {
         url = view.findViewById(R.id.url_root);
+        if(sharedPreferences.contains(APP_URL)){
+            String url_value = sharedPreferences.getString(APP_URL,"");
+            if (!url_value.equals("")){
+                url.setText(url_value);
+            }
+        }
         url.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -73,7 +93,19 @@ public class SettingsMainFragment extends Fragment {
             }
         });
         login = view.findViewById(R.id.login_crm);
+        if(sharedPreferences.contains(APP_USER_LOGIN)){
+            String login_value = sharedPreferences.getString(APP_USER_LOGIN,"");
+            if (!login_value.equals("")){
+                login.setText(login_value);
+            }
+        }
         pass = view.findViewById(R.id.pass_crm);
+        if(sharedPreferences.contains(APP_USER_PASS)){
+            String pass_value = sharedPreferences.getString(APP_USER_PASS,"");
+            if (!pass_value.equals("")){
+                pass.setText(pass_value);
+            }
+        }
     }
 
 
@@ -84,10 +116,11 @@ public class SettingsMainFragment extends Fragment {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast toast = Toast.makeText(v.getContext(),
-                        "Пора покормить кота!", Toast.LENGTH_SHORT);
-                toast.show();
-
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(APP_URL, url.getText().toString());
+                editor.putString(APP_USER_LOGIN,login.getText().toString());
+                editor.putString(APP_USER_PASS, pass.getText().toString());
+                editor.apply();
             }
         });
 
