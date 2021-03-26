@@ -27,7 +27,8 @@ public class RestSuite {
     public String sendRequest(){
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
-        MediaType mediaType = MediaType.parse("text/plain");
+        //MediaType mediaType = MediaType.parse("text/plain");application/json; charset=UTF-8
+        MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM)
                 .addFormDataPart("method",method)
                 .addFormDataPart("input_type",TYPE_SEND)
@@ -41,7 +42,11 @@ public class RestSuite {
         String result="";
         try {
             Response response = client.newCall(request).execute();
-            result = response.body().toString();
+            if (response.code() == 200) {
+                // Get response
+                result = response.body().string();
+
+            }
         } catch (IOException e) {
             e.printStackTrace();
             result ="";
