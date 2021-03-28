@@ -2,6 +2,7 @@ package com.example.suitecrmapp.rest;
 
 import com.google.gson.Gson;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class ApiSuiteCRM {
@@ -26,6 +27,14 @@ public class ApiSuiteCRM {
         String json = gson.toJson(restDataLolin);
         RestSuite restSuite = new RestSuite(url,"login",json);
         String result = restSuite.sendRequest();
-        return result;
+        //JSONPasse
+        String cacheUser;
+        try {
+            JSONObject resultJson = new JSONObject(result);
+            cacheUser = resultJson.getString("id");
+        } catch (JSONException e) {
+            cacheUser="";
+        }
+        return cacheUser;
     }
 }
