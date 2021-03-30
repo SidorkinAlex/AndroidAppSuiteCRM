@@ -3,6 +3,7 @@ package com.example.suitecrmapp.ui.settings;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -21,6 +22,9 @@ import android.widget.Toast;
 
 import com.example.suitecrmapp.MainActivity;
 import com.example.suitecrmapp.R;
+import com.example.suitecrmapp.rest.ApiSuiteCRM;
+import com.example.suitecrmapp.rest.RestDataLolin;
+import com.google.gson.Gson;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -127,12 +131,29 @@ public class SettingsMainFragment extends Fragment {
         testButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast toast = Toast.makeText(v.getContext(),
-                        "Пора покормить кота!", Toast.LENGTH_SHORT);
-                toast.show();
-
+                String login_test = login.getText().toString();
+                String pass_test = pass.getText().toString();
+                String url_test = url.getText().toString();
+                new AsyncRequest().execute(login_test, pass_test, url_test);
             }
         });
+    }
+    class AsyncRequest extends AsyncTask<String, Integer, String> {
+
+        @Override
+        protected String doInBackground(String... arg) {
+            ApiSuiteCRM api = new ApiSuiteCRM(arg[0], arg[1], arg[2], sharedPreferences);
+            String result = api.authorization();
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            Toast toast = Toast.makeText(pass.getContext(),
+                    s, Toast.LENGTH_SHORT);
+            toast.show();
+        }
     }
 
     @Override
