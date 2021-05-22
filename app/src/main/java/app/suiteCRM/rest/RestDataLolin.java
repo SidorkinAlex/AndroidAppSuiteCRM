@@ -1,9 +1,4 @@
-package com.example.suitecrmapp.rest;
-
-import org.apache.commons.codec.digest.DigestUtils;
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+package app.suiteCRM.rest;
 
 public class RestDataLolin {
     public User_Auth user_auth;

@@ -1,33 +1,27 @@
-package com.example.suitecrmapp.ui.settings;
+package app.suiteCRM.ui.settings;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
-import android.os.AsyncTask;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
+import app.suiteCRM.rest.ApiSuiteCRM;
 
-import com.example.suitecrmapp.MainActivity;
-import com.example.suitecrmapp.R;
-import com.example.suitecrmapp.rest.ApiSuiteCRM;
-import com.example.suitecrmapp.rest.RestDataLolin;
-import com.google.gson.Gson;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import app.suiteCRM.R;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -134,26 +128,15 @@ public class SettingsMainFragment extends Fragment {
                 String login_test = login.getText().toString();
                 String pass_test = pass.getText().toString();
                 String url_test = url.getText().toString();
-                new AsyncRequest().execute(login_test, pass_test, url_test);
+
             }
         });
     }
-    class AsyncRequest extends AsyncTask<String, Integer, String> {
 
-        @Override
-        protected String doInBackground(String... arg) {
-            ApiSuiteCRM api = new ApiSuiteCRM(arg[0], arg[1], arg[2], sharedPreferences);
-            String result = api.authorization();
-            return result;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            Toast toast = Toast.makeText(pass.getContext(),
-                    s, Toast.LENGTH_SHORT);
-            toast.show();
-        }
+    public String testAuth(String login_test, String pass_test, String url_test, SharedPreferences sP){
+        ApiSuiteCRM api = new ApiSuiteCRM(login_test,pass_test,url_test, sP);
+        String result = api.authorization();
+        return result;
     }
 
     @Override
