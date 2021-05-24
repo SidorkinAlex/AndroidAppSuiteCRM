@@ -1,4 +1,4 @@
-package com.example.suitecrmapp.rest;
+package app.suiteCRM.rest;
 
 import android.content.SharedPreferences;
 

@@ -1,6 +1,4 @@
-package com.example.suitecrmapp.rest;
-
-import org.json.JSONObject;
+package app.suiteCRM.rest;
 
 import java.io.IOException;
 
