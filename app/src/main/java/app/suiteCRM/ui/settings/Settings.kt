@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Looper
 import android.preference.PreferenceManager
 import android.preference.PreferenceManager.*
 import android.util.Log
@@ -16,6 +17,10 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import app.suiteCRM.R
+import app.suiteCRM.rest.ApiSuiteCRM
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -33,8 +38,8 @@ class SettingsFragment : Fragment() {
     private var param2: String? = null
     private val APP_URL: String = "url"
     private val APP_MAIN_SETTINGS: String = "APP_MAIN"
-    private val APP_USER_LOGIN:String = "login"
-    private val APP_USER_PASS:String = "pass"
+    private val APP_USER_LOGIN: String = "login"
+    private val APP_USER_PASS: String = "pass"
     private lateinit var sharedPreferences: SharedPreferences
 
     private lateinit var url: EditText
@@ -51,8 +56,10 @@ class SettingsFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         // Inflate the layout for this fragment;
         return inflater.inflate(R.layout.fragment_settings_main, container, false)
     }
@@ -71,35 +78,56 @@ class SettingsFragment : Fragment() {
             savePreferense()
         }
         testButton = view.findViewById(R.id.settings_test_button)
+        testButton.setOnClickListener {
+
+            testSettings(view.context)
+        }
+    }
+
+    private fun testSettings(context: Context) {
+        CoroutineScope(Dispatchers.IO).launch {
+            Log.d("login",login.text.toString())
+            Log.d("pass",pass.text.toString())
+            Log.d("url",url.text.toString())
+            val suiteApi:ApiSuiteCRM = ApiSuiteCRM(login.text.toString(),
+                pass.text.toString(),
+            url.text.toString(),sharedPreferences)
+            val result = suiteApi.authorization()
+            CoroutineScope(Dispatchers.Main).launch {
+            val myToast1 = Toast.makeText(context, result, Toast.LENGTH_SHORT)
+            myToast1.show()
+            Looper.loop()
+            }
+        }
+
+
     }
 
     @SuppressLint("CommitPrefEdits")
     private fun savePreferense() {
-        val editor:SharedPreferences.Editor = sharedPreferences.edit()
-        editor.putString(APP_URL,url.text.toString())
-        editor.putString(APP_USER_LOGIN,login.text.toString())
-        editor.putString(APP_USER_PASS,pass.text.toString())
+        val editor: SharedPreferences.Editor = sharedPreferences.edit()
+        editor.putString(APP_URL, url.text.toString())
+        editor.putString(APP_USER_LOGIN, login.text.toString())
+        editor.putString(APP_USER_PASS, pass.text.toString())
         editor.apply()
-        val text: String = url.text.toString() +" "+ pass.text.toString() +" "+ login.text.toString();
+        val text: String =
+            url.text.toString() + " " + pass.text.toString() + " " + login.text.toString();
         val myToast = Toast.makeText(this.context, text, Toast.LENGTH_SHORT)
         myToast.show()
     }
 
     private fun setValueFromPreference() {
-        val settingsUrl = sharedPreferences.getString(APP_URL,"")
-        if(!settingsUrl.equals("")){
+        val settingsUrl = sharedPreferences.getString(APP_URL, "")
+        if (!settingsUrl.equals("")) {
             url.setText(settingsUrl)
-            Log.d(APP_URL, settingsUrl.toString())
         }
-        val settingsLogin = sharedPreferences.getString(APP_USER_LOGIN,"")
-        if(!settingsLogin.equals("")){
+        val settingsLogin = sharedPreferences.getString(APP_USER_LOGIN, "")
+        if (!settingsLogin.equals("")) {
             login.setText(settingsLogin)
-            Log.d(APP_URL, settingsLogin.toString())
         }
-        val settingsPass = sharedPreferences.getString(APP_USER_PASS,"")
-        if(!settingsPass.equals("")){
-          pass.setText(settingsPass)
-            Log.d(APP_URL, settingsPass.toString())
+        val settingsPass = sharedPreferences.getString(APP_USER_PASS, "")
+        if (!settingsPass.equals("")) {
+            pass.setText(settingsPass)
         }
     }
 
@@ -122,11 +150,11 @@ class SettingsFragment : Fragment() {
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
-                SettingsFragment().apply {
-                    arguments = Bundle().apply {
-                        putString(ARG_PARAM1, param1)
-                        putString(ARG_PARAM2, param2)
-                    }
+            SettingsFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_PARAM1, param1)
+                    putString(ARG_PARAM2, param2)
                 }
+            }
     }
 }

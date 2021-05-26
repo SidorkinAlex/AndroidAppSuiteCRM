@@ -14,7 +14,7 @@ public class ApiSuiteCRM {
     public SharedPreferences sharedPreferences;
 
     public ApiSuiteCRM(String login, String pass, String url, SharedPreferences sharedPreferences) {
-        if(login.equals("") || pass.equals("") || url.equals("")) {
+        if (login.equals("") || pass.equals("") || url.equals("")) {
             badData = true;
         }
         restDataLolin = new RestDataLolin(login, pass);
@@ -22,34 +22,41 @@ public class ApiSuiteCRM {
         this.sharedPreferences = sharedPreferences;
 
     }
-    public void save_session(String session){
+
+    public void save_session(String session) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("session", session);
+        editor.apply();
     }
 
-    public String authorization(){
-        if(badData) {
+    public String authorization() {
+        if (badData) {
             return "";
         }
         Gson gson = new Gson();
         String json = gson.toJson(restDataLolin);
-        RestSuite restSuite = new RestSuite(url,"login",json);
+        RestSuite restSuite = new RestSuite(url, "login", json);
         String result = restSuite.sendRequest();
-        save_session(result);
         //JSONPasse
         String cacheUser;
+        String resultMessage;
         try {
             JSONObject resultJson = new JSONObject(result);
             cacheUser = resultJson.getString("id");
+            save_session(cacheUser);
+            resultMessage = "sucsess";
         } catch (JSONException e) {
             JSONObject resultJson = null;
             try {
                 resultJson = new JSONObject(result);
                 cacheUser = resultJson.getString("name");
+                resultMessage = cacheUser;
             } catch (JSONException jsonException) {
                 cacheUser = "error";
+                resultMessage = cacheUser;
             }
         }
-        return cacheUser;
+
+        return resultMessage;
     }
 }
