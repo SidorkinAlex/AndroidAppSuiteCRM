@@ -18,6 +18,7 @@ import android.widget.EditText
 import android.widget.Toast
 import app.suiteCRM.R
 import app.suiteCRM.rest.ApiSuiteCRM
+import app.suiteCRM.settings.PreferenceConstant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,10 +37,10 @@ class SettingsFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
-    private val APP_URL: String = "url"
+    private val APP_URL: String? = PreferenceConstant.URL
     private val APP_MAIN_SETTINGS: String = "APP_MAIN"
-    private val APP_USER_LOGIN: String = "login"
-    private val APP_USER_PASS: String = "pass"
+    private val APP_USER_LOGIN: String? = PreferenceConstant.LOGIN
+    private val APP_USER_PASS: String? = PreferenceConstant.PASSWORD
     private lateinit var sharedPreferences: SharedPreferences
 
     private lateinit var url: EditText
@@ -86,9 +87,6 @@ class SettingsFragment : Fragment() {
 
     private fun testSettings(context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
-            Log.d("login",login.text.toString())
-            Log.d("pass",pass.text.toString())
-            Log.d("url",url.text.toString())
             val suiteApi:ApiSuiteCRM = ApiSuiteCRM(login.text.toString(),
                 pass.text.toString(),
             url.text.toString(),sharedPreferences)

@@ -1,5 +1,6 @@
 package app.suiteCRM
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.Menu
@@ -14,6 +15,8 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.navigation.NavController
+import app.suiteCRM.settings.PreferenceConstant
 
 class MainActivity : AppCompatActivity() {
 
@@ -39,6 +42,39 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_home, R.id.nav_settings), drawerLayout)
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+        val hasRequireParams = checkPreference()
+        if(hasRequireParams) {
+            checkNetvorkActive()
+            getModuleList()
+        } else {
+            activeSettingsPage(navController)
+        }
+    }
+
+    private fun checkNetvorkActive() {
+       
+    }
+
+    private fun getModuleList() {
+
+    }
+
+    private fun activeSettingsPage(navController: NavController) {
+        val graph = navController.graph
+        graph.startDestination = R.id.nav_settings
+        navController.setGraph(graph)
+    }
+
+    private fun checkPreference(): Boolean {
+        val sharedPreferences: SharedPreferences = this.getPreferences(Context.MODE_PRIVATE)!!
+        val url = sharedPreferences.getString(PreferenceConstant.URL,"")
+        val login = sharedPreferences.getString(PreferenceConstant.LOGIN,"")
+        val pass = sharedPreferences.getString(PreferenceConstant.PASSWORD,"")
+
+        if(!url.equals("") && !login.equals("") && !pass.equals("")){
+            return true
+        }
+        return false
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
