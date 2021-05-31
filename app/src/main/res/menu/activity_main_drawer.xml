@@ -2,6 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
+    <group android:checkableBehavior="single"
+        android:id="@+id/api_suitecrm_group">
+
+    </group>
 
     <group android:checkableBehavior="single">
         <item

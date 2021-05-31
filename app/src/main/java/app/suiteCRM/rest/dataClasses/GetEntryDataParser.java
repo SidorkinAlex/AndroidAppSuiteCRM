@@ -1,5 +1,7 @@
 package app.suiteCRM.rest.dataClasses;
 
+import com.google.gson.JsonArray;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,6 +27,6 @@ public class GetEntryDataParser {
         return moduleMenuCollections;
     }
     public String getProperty(JSONObject moduleData,String key) throws JSONException {
-        return moduleData.getJSONObject(key).getString(key);
+        return moduleData.getJSONObject("name_value_list").getJSONObject(key).getString("value");
     }
 }

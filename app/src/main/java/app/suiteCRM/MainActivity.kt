@@ -1,9 +1,15 @@
 package app.suiteCRM
 
+import android.content.ClipData
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Looper
 import android.view.Menu
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import android.widget.Toast
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.navigation.NavigationView
@@ -14,13 +20,21 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.menu.MenuView
 import androidx.appcompat.widget.Toolbar
 import androidx.navigation.NavController
+import app.suiteCRM.rest.ApiSuiteCRM
+import app.suiteCRM.rest.ModuleMenu
 import app.suiteCRM.settings.PreferenceConstant
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import androidx.appcompat.view.menu.MenuView.ItemView as ItemView1
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var sharedPreferences: SharedPreferences;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,20 +57,32 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
         val hasRequireParams = checkPreference()
+        sharedPreferences = this.getPreferences(Context.MODE_PRIVATE)!!
         if(hasRequireParams) {
             checkNetvorkActive()
-            getModuleList()
+            getSuitecrmMenu(navView)
         } else {
             activeSettingsPage(navController)
         }
     }
 
-    private fun checkNetvorkActive() {
-       
+    private fun getSuitecrmMenu(navView :NavigationView) {
+        CoroutineScope(Dispatchers.IO).launch {
+
+            val suiteApi: ApiSuiteCRM = ApiSuiteCRM(sharedPreferences)
+            val result = suiteApi.getModuleList()
+            CoroutineScope(Dispatchers.Main).launch {
+                result.map {
+                    var textView:TextView = TextView(navView.context)
+                    textView.setText(it.name)
+                    navView.addView(textView)
+                }
+            }
+        }
     }
 
-    private fun getModuleList() {
-
+    private fun checkNetvorkActive() {
+       
     }
 
     private fun activeSettingsPage(navController: NavController) {

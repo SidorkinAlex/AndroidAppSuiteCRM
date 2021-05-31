@@ -4,32 +4,67 @@ import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
+import app.suiteCRM.rest.dataClasses.GetEntryDataParser;
+import app.suiteCRM.rest.dataClasses.GetEntryListDataBuilder;
+import app.suiteCRM.settings.PreferenceConstant;
+
 public class ApiSuiteCRM {
-    RestDataLolin restDataLolin;
+
     boolean badData = false;
     public String url;
+    public String login;
+    public String pass;
+    public String session;
     public SharedPreferences sharedPreferences;
+    public String error;
 
     public ApiSuiteCRM(String login, String pass, String url, SharedPreferences sharedPreferences) {
         if (login.equals("") || pass.equals("") || url.equals("")) {
             badData = true;
         }
-        restDataLolin = new RestDataLolin(login, pass);
         this.url = url;
+        this.login = login;
+        this.pass = pass;
         this.sharedPreferences = sharedPreferences;
 
     }
 
+    public ApiSuiteCRM(SharedPreferences sharedPreferences) {
+        this.sharedPreferences = sharedPreferences;
+        initAutorisationDataFromSettings();
+    }
+
+    private void initAutorisationDataFromSettings() {
+        url = sharedPreferences.getString(PreferenceConstant.URL,"");
+        login = sharedPreferences.getString(PreferenceConstant.LOGIN,"");
+        pass = sharedPreferences.getString(PreferenceConstant.PASSWORD,"");
+        String timeSessionInPreference = sharedPreferences.getString(PreferenceConstant.SESSION_TIME, "");
+        long timeSession = 0L;
+        if(!timeSessionInPreference.equals("")){
+            timeSession =Long.parseLong(timeSessionInPreference,10);
+        }
+        long nowTime = System.currentTimeMillis() / 1000L;
+        if(timeSession + 60 < nowTime){
+            this.authorization();
+        }
+    }
+
     public void save_session(String session) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("session", session);
+        editor.putString(PreferenceConstant.SESSION, session);
+        long ut2 = System.currentTimeMillis() / 1000L;
+        editor.putString(PreferenceConstant.SESSION_TIME, String.valueOf(ut2));
         editor.apply();
     }
 
     public String authorization() {
+        RestDataLolin restDataLolin = new RestDataLolin(login, pass);
         if (badData) {
             return "";
         }
@@ -43,6 +78,7 @@ public class ApiSuiteCRM {
         try {
             JSONObject resultJson = new JSONObject(result);
             cacheUser = resultJson.getString("id");
+            session = cacheUser;
             save_session(cacheUser);
             resultMessage = "sucsess";
         } catch (JSONException e) {
@@ -58,5 +94,26 @@ public class ApiSuiteCRM {
         }
 
         return resultMessage;
+    }
+
+    public ArrayList<ModuleMenu> getModuleList(){
+        GetEntryListDataBuilder moduleListJSON = new GetEntryListDataBuilder(sharedPreferences,"MBL_MODULE_PUBLIC_LIST");
+        String dataParams = moduleListJSON.getJson();
+        RestSuite restSuite = new RestSuite(url, "get_entry_list", dataParams);
+        String result = restSuite.sendRequest();
+        ArrayList<ModuleMenu> moduleMenuCollections = new ArrayList<ModuleMenu>();
+        try {
+            GetEntryDataParser getEntryDataParser = new GetEntryDataParser();
+            return getEntryDataParser.parseEntryList(result);
+        } catch (JSONException e) {
+            JSONObject resultJson = null;
+            try {
+                resultJson = new JSONObject(result);
+                error = resultJson.getString("name");
+            } catch (JSONException jsonException) {
+                error = "error parse JSON in getModuleList";
+            }
+        }
+        return moduleMenuCollections;
     }
 }

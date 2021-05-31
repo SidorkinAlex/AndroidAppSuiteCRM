@@ -67,7 +67,9 @@ public class GetEntryListDataBuilder {
     }
 
     private void createDeleted() throws JSONException {
-        json.put("deleted",Byte.toString(deleted));
+        if(deleted == 1) {
+            json.put("deleted", Byte.toString(deleted));
+        }
     }
 
     private void createOffset() throws JSONException {
