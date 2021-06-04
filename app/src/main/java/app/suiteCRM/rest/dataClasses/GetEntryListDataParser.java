@@ -10,12 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import app.suiteCRM.rest.ModuleMenu;
+import app.suiteCRM.settings.ModuleList;
 
-public class GetEntryDataParser {
-    public ArrayList<ModuleMenu> parseEntryList(String queryResult) throws JSONException {
+public class GetEntryListDataParser {
+    public ModuleList parseEntryList(String queryResult) throws JSONException {
         JSONObject jsonObject = new JSONObject(queryResult);
         JSONArray entryList = jsonObject.getJSONArray("entry_list");
-        ArrayList<ModuleMenu> moduleMenuCollections = new ArrayList<ModuleMenu>();
+        ModuleList moduleMenuCollections = new ModuleList();
         for (int i=0; i < entryList.length();i++) {
             JSONObject oneModuleDataJSON = entryList.getJSONObject(i);
             String id = getProperty(oneModuleDataJSON,"id");

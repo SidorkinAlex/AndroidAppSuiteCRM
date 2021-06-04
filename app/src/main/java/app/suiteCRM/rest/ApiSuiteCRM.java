@@ -4,14 +4,12 @@ import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-
-import app.suiteCRM.rest.dataClasses.GetEntryDataParser;
+import app.suiteCRM.rest.dataClasses.GetEntryListDataParser;
 import app.suiteCRM.rest.dataClasses.GetEntryListDataBuilder;
+import app.suiteCRM.settings.ModuleList;
 import app.suiteCRM.settings.PreferenceConstant;
 
 public class ApiSuiteCRM {
@@ -41,16 +39,16 @@ public class ApiSuiteCRM {
     }
 
     private void initAutorisationDataFromSettings() {
-        url = sharedPreferences.getString(PreferenceConstant.URL,"");
-        login = sharedPreferences.getString(PreferenceConstant.LOGIN,"");
-        pass = sharedPreferences.getString(PreferenceConstant.PASSWORD,"");
+        url = sharedPreferences.getString(PreferenceConstant.URL, "");
+        login = sharedPreferences.getString(PreferenceConstant.LOGIN, "");
+        pass = sharedPreferences.getString(PreferenceConstant.PASSWORD, "");
         String timeSessionInPreference = sharedPreferences.getString(PreferenceConstant.SESSION_TIME, "");
         long timeSession = 0L;
-        if(!timeSessionInPreference.equals("")){
-            timeSession =Long.parseLong(timeSessionInPreference,10);
+        if (!timeSessionInPreference.equals("")) {
+            timeSession = Long.parseLong(timeSessionInPreference, 10);
         }
         long nowTime = System.currentTimeMillis() / 1000L;
-        if(timeSession + 60 < nowTime){
+        if (timeSession + 60 < nowTime) {
             this.authorization();
         }
     }
@@ -96,14 +94,16 @@ public class ApiSuiteCRM {
         return resultMessage;
     }
 
-    public ArrayList<ModuleMenu> getModuleList(){
-        GetEntryListDataBuilder moduleListJSON = new GetEntryListDataBuilder(sharedPreferences,"MBL_MODULE_PUBLIC_LIST");
+    public ModuleList getModuleList() {
+        GetEntryListDataBuilder moduleListJSON = new GetEntryListDataBuilder(sharedPreferences, "MBL_MODULE_PUBLIC_LIST");
         String dataParams = moduleListJSON.getJson();
         RestSuite restSuite = new RestSuite(url, "get_entry_list", dataParams);
         String result = restSuite.sendRequest();
-        ArrayList<ModuleMenu> moduleMenuCollections = new ArrayList<ModuleMenu>();
+        ModuleList moduleMenuCollections = new ModuleList();
         try {
-            GetEntryDataParser getEntryDataParser = new GetEntryDataParser();
+            GetEntryListDataParser getEntryDataParser = new GetEntryListDataParser();
+            ModuleList moduleList = getEntryDataParser.parseEntryList(result);
+            save_module_menu_list(moduleList);
             return getEntryDataParser.parseEntryList(result);
         } catch (JSONException e) {
             JSONObject resultJson = null;
@@ -115,5 +115,12 @@ public class ApiSuiteCRM {
             }
         }
         return moduleMenuCollections;
+    }
+
+    private void save_module_menu_list(ModuleList moduleList) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove(PreferenceConstant.MODULE_MENU_LIST);
+        editor.putString(PreferenceConstant.MODULE_MENU_LIST, moduleList.serialise());
+        editor.apply();
     }
 }
