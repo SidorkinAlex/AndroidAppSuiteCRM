@@ -1,28 +1,42 @@
 package app.suiteCRM
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.Menu
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.navigation.NavigationView
-import androidx.navigation.findNavController
+import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.core.view.forEach
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
+import androidx.navigation.*
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import androidx.navigation.NavController
+import app.suiteCRM.rest.ApiSuiteCRM
+import app.suiteCRM.settings.ModuleList
 import app.suiteCRM.settings.PreferenceConstant
+import app.suiteCRM.ui.FragmentSuiteCRMListView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var sharedPreferences: SharedPreferences;
+    private lateinit var navController: NavController;
+    private lateinit var menu: Menu
+    private  val suiteCRMmenuItemsCollection = ArrayList<MenuItem>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        sharedPreferences = this.getPreferences(Context.MODE_PRIVATE)!!
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val toolbar: Toolbar = findViewById(R.id.toolbar)
@@ -35,27 +49,67 @@ class MainActivity : AppCompatActivity() {
         }
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         val navView: NavigationView = findViewById(R.id.nav_view)
-        val navController = findNavController(R.id.nav_host_fragment)
+        val jsonModuleList = sharedPreferences.getString(PreferenceConstant.MODULE_MENU_LIST, "")
+        val result = ModuleList()
+        navController = findNavController(R.id.nav_host_fragment)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(setOf(
-                R.id.nav_home, R.id.nav_settings), drawerLayout)
+                R.id.nav_home, R.id.nav_settings,R.id.nav_suitecrm_list_view), drawerLayout)
         setupActionBarWithNavController(navController, appBarConfiguration)
+        jsonModuleList?.let { result.unserialise(it) }
+        result.getArrayList().map {
+            val item = navView.getMenu().add(it.name)
+            item.itemId
+            suiteCRMmenuItemsCollection.add(item)
+            navController.graph.addDestination(ActivityNavigator(this).createDestination().apply {
+                id = item.itemId
+                setComponentName(ComponentName(navView.context, "FragmentSuiteCRMListView"))
+                // or setIntent
+            })
+        }
+
+
         navView.setupWithNavController(navController)
         val hasRequireParams = checkPreference()
-        if(hasRequireParams) {
+
+        if (hasRequireParams) {
             checkNetvorkActive()
-            getModuleList()
+            getSuitecrmMenu(navView)
         } else {
             activeSettingsPage(navController)
         }
     }
 
-    private fun checkNetvorkActive() {
-       
+    private fun getSuitecrmMenu(navView: NavigationView) {
+        CoroutineScope(Dispatchers.IO).launch {
+
+            val suiteApi: ApiSuiteCRM = ApiSuiteCRM(sharedPreferences)
+            val result = suiteApi.getModuleList()
+            CoroutineScope(Dispatchers.Main).launch {
+                result.getArrayList().map {
+                    if(!checkItemInMenu(it.name)) {
+                        menu.add(it.name)
+                    }
+                }
+            }
+        }
     }
 
-    private fun getModuleList() {
+    private fun checkItemInMenu(itemName: String?): Boolean {
+        var hasItem =false
+
+        menu.forEach {
+            if(it.title.equals(itemName)){
+                hasItem = true
+                return@forEach
+            }
+        }
+
+        return hasItem
+    }
+
+    private fun checkNetvorkActive() {
 
     }
 
@@ -67,11 +121,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkPreference(): Boolean {
         val sharedPreferences: SharedPreferences = this.getPreferences(Context.MODE_PRIVATE)!!
-        val url = sharedPreferences.getString(PreferenceConstant.URL,"")
-        val login = sharedPreferences.getString(PreferenceConstant.LOGIN,"")
-        val pass = sharedPreferences.getString(PreferenceConstant.PASSWORD,"")
+        val url = sharedPreferences.getString(PreferenceConstant.URL, "")
+        val login = sharedPreferences.getString(PreferenceConstant.LOGIN, "")
+        val pass = sharedPreferences.getString(PreferenceConstant.PASSWORD, "")
 
-        if(!url.equals("") && !login.equals("") && !pass.equals("")){
+        if (!url.equals("") && !login.equals("") && !pass.equals("")) {
             return true
         }
         return false

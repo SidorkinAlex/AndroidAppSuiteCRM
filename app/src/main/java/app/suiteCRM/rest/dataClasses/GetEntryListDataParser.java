@@ -1,5 +1,7 @@
 package app.suiteCRM.rest.dataClasses;
 
+import com.google.gson.JsonArray;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,12 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import app.suiteCRM.rest.ModuleMenu;
+import app.suiteCRM.settings.ModuleList;
 
-public class GetEntryDataParser {
-    public ArrayList<ModuleMenu> parseEntryList(String queryResult) throws JSONException {
+public class GetEntryListDataParser {
+    public ModuleList parseEntryList(String queryResult) throws JSONException {
         JSONObject jsonObject = new JSONObject(queryResult);
         JSONArray entryList = jsonObject.getJSONArray("entry_list");
-        ArrayList<ModuleMenu> moduleMenuCollections = new ArrayList<ModuleMenu>();
+        ModuleList moduleMenuCollections = new ModuleList();
         for (int i=0; i < entryList.length();i++) {
             JSONObject oneModuleDataJSON = entryList.getJSONObject(i);
             String id = getProperty(oneModuleDataJSON,"id");
@@ -25,6 +28,6 @@ public class GetEntryDataParser {
         return moduleMenuCollections;
     }
     public String getProperty(JSONObject moduleData,String key) throws JSONException {
-        return moduleData.getJSONObject(key).getString(key);
+        return moduleData.getJSONObject("name_value_list").getJSONObject(key).getString("value");
     }
 }
