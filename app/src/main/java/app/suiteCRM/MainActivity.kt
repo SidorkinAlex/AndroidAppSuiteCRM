@@ -1,5 +1,6 @@
 package app.suiteCRM
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -9,8 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.forEach
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.navigation.NavController
-import androidx.navigation.findNavController
+import androidx.fragment.app.Fragment
+import androidx.navigation.*
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -18,6 +19,7 @@ import androidx.navigation.ui.setupWithNavController
 import app.suiteCRM.rest.ApiSuiteCRM
 import app.suiteCRM.settings.ModuleList
 import app.suiteCRM.settings.PreferenceConstant
+import app.suiteCRM.ui.FragmentSuiteCRMListView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
@@ -29,6 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var sharedPreferences: SharedPreferences;
+    private lateinit var navController: NavController;
     private lateinit var menu: Menu
     private  val suiteCRMmenuItemsCollection = ArrayList<MenuItem>()
 
@@ -46,22 +49,27 @@ class MainActivity : AppCompatActivity() {
         }
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         val navView: NavigationView = findViewById(R.id.nav_view)
-        menu = navView.getMenu()
         val jsonModuleList = sharedPreferences.getString(PreferenceConstant.MODULE_MENU_LIST, "")
         val result = ModuleList()
-        jsonModuleList?.let { result.unserialise(it) }
-        if (result != null) {
-            result.getArrayList().map {
-                var item = menu.add(it.name)
-                suiteCRMmenuItemsCollection.add(item)
-            }
-        }
-        val navController = findNavController(R.id.nav_host_fragment)
+        navController = findNavController(R.id.nav_host_fragment)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(setOf(
-                R.id.nav_home, R.id.nav_settings), drawerLayout)
+                R.id.nav_home, R.id.nav_settings,R.id.nav_suitecrm_list_view), drawerLayout)
         setupActionBarWithNavController(navController, appBarConfiguration)
+        jsonModuleList?.let { result.unserialise(it) }
+        result.getArrayList().map {
+            val item = navView.getMenu().add(it.name)
+            item.itemId
+            suiteCRMmenuItemsCollection.add(item)
+            navController.graph.addDestination(ActivityNavigator(this).createDestination().apply {
+                id = item.itemId
+                setComponentName(ComponentName(navView.context, "FragmentSuiteCRMListView"))
+                // or setIntent
+            })
+        }
+
+
         navView.setupWithNavController(navController)
         val hasRequireParams = checkPreference()
 
